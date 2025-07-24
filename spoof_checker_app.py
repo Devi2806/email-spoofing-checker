@@ -11,6 +11,14 @@ body {
     background-color: #0f0f0f;
     color: #f0f0f0;
 }
+.stCodeBlock, .stMarkdown, .stSubheader {
+    border: 1px solid #0097a7;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #121212;
+    margin-bottom: 20px;
+}
+
 [data-testid="stAppViewContainer"] {
     background-color: #0f0f0f;
 }
@@ -81,7 +89,65 @@ def get_dmarc(domain):
         return "No DMARC record found"
     except Exception as e:
         return f"DMARC Error: {str(e)}"
+def parse_dmarc_fields(dmarc_record):
+    result = {"p": "N/A", "rua": "N/A", "aspf": "N/A", "adkim": "N/A"}
+    try:
+        fields = dmarc_record.split(";")
+        for field in fields:
+            field = field.strip()
+            if field.startswith("p="):
+                result["p"] = field.split("=")[1]
+            elif field.startswith("rua="):
+                result["rua"] = field.split("=")[1]
+            elif field.startswith("aspf="):
+                result["aspf"] = field.split("=")[1]
+            elif field.startswith("adkim="):
+                result["adkim"] = field.split("=")[1]
+    except:
+        pass
+    return result
 
+    # 🔍 Enhanced DMARC Parser - Extracts p=, rua=, aspf=, adkim=
+def parse_dmarc_policy(domain):
+    try:
+        dmarc_domain = "_dmarc." + domain
+        answers = dns.resolver.resolve(dmarc_domain, 'TXT')
+        for rdata in answers:
+            for txt_string in rdata.strings:
+                decoded = txt_string.decode()
+                if decoded.startswith("v=DMARC1"):
+                    policy_data = decoded.split(';')
+                    parsed = {}
+                    for item in policy_data:
+                        item = item.strip()
+                        if "=" in item:
+                            key, value = item.split("=", 1)
+                            parsed[key] = value
+                    return parsed
+        return {"error": "DMARC record not found"}
+    except Exception as e:
+        return {"error": str(e)}
+# 🔄 Alignment checker based on DMARC's aspf and adkim settings
+def check_alignment(from_domain, spf_domain, dkim_domain, aspf='r', adkim='r'):
+    spf_align = (from_domain == spf_domain) if aspf == 's' else (from_domain.endswith(spf_domain))
+    dkim_align = (from_domain == dkim_domain) if adkim == 's' else (from_domain.endswith(dkim_domain))
+    return spf_align, dkim_align
+# ✅ Final policy decision based on alignment and pass/fail
+def apply_dmarc_policy(spf_passed, dkim_passed, spf_align, dkim_align, policy='none'):
+    if spf_passed and spf_align:
+        return "✅ Passed via SPF alignment"
+    elif dkim_passed and dkim_align:
+        return "✅ Passed via DKIM alignment"
+    else:
+        if policy == 'reject':
+            return "❌ Rejected by DMARC policy"
+        elif policy == 'quarantine':
+            return "⚠️ Quarantined by DMARC policy"
+        else:
+            return "✅ Allowed (Policy = none)"
+
+
+    
 def classify_email(spf, dmarc, dkim="pass", header_match=True):
     score = 0
     if "v=spf1" in spf:
@@ -134,6 +200,8 @@ if email:
         with st.spinner("🔍 Verifying DNS records..."):
             spf_result = get_spf(domain)
             dmarc_result = get_dmarc(domain)
+            dmarc_fields = parse_dmarc_fields(dmarc_result)
+
 
             # Simulated test values (customize for testing)
             dkim_result = "pass"
@@ -151,7 +219,12 @@ if email:
         st.subheader("🧾 DMARC Record:")
         st.code(dmarc_result)
 
+         # ✅ Paste this block RIGHT HERE:
+        st.subheader("🔐 DMARC Policy Fields")
+        st.write(f"**Policy (p):** `{dmarc_fields['p']}`")
+        st.write(f"**Aggregate Reports (rua):** `{dmarc_fields['rua']}`")
+        st.write(f"**SPF Alignment Mode (aspf):** `{dmarc_fields['aspf']}`")
+        st.write(f"**DKIM Alignment Mode (adkim):** `{dmarc_fields['adkim']}`")
+
         st.subheader("🔎 Verdict:")
-        st.info(verdict)
-    else:
-        st.error("🚫 Invalid email format")
+        st.success(verdict)
