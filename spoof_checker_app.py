@@ -1,6 +1,8 @@
 import streamlit as st
 import dns.resolver
 import re
+import streamlit.components.v1 as components
+
 
 # =========================
 # Custom CSS Styling (Modern Dark Theme)
@@ -190,6 +192,13 @@ def get_verdict(spf, dmarc):
 # =========================
 st.title("💌 Email Spoofing Checker")
 st.markdown("Check if an email address is spoofed using SPF & DMARC records.")
+with st.expander("❓ What do SPF, DKIM, DMARC mean?"):
+    st.markdown("""
+    - **SPF (Sender Policy Framework):** Validates sending mail servers.
+    - **DKIM (DomainKeys Identified Mail):** Adds cryptographic signature.
+    - **DMARC (Domain-based Authentication):** Combines SPF and DKIM to determine legitimacy.
+    """)
+
 
 email = st.text_input("📥 Enter sender's email address:")
 
@@ -219,7 +228,7 @@ if email:
         st.subheader("🧾 DMARC Record:")
         st.code(dmarc_result)
 
-         # ✅ Paste this block RIGHT HERE:
+         # ✅ Paste this block :
         st.subheader("🔐 DMARC Policy Fields")
         st.write(f"**Policy (p):** `{dmarc_fields['p']}`")
         st.write(f"**Aggregate Reports (rua):** `{dmarc_fields['rua']}`")
@@ -228,3 +237,10 @@ if email:
 
         st.subheader("🔎 Verdict:")
         st.success(verdict)
+        
+if st.sidebar.button("📘 Open Help Page"):
+    with open("help.html", "r", encoding="utf-8") as file:
+        help_content = file.read()
+    st.subheader("📘 Help Page")
+    components.html(help_content, height=800, scrolling=True)
+    
