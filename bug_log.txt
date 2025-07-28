@@ -1,0 +1,9 @@
+# Final Bug Log - Email Spoofing Checker
+
+1. ❌ Malformed email crashing app → ✅ Fixed by regex check
+2. ❌ Streamlit crashes if DMARC record missing → ✅ Handled with default values
+3. ❌ Long SPF records were overflowing UI → ✅ Used st.code blocks
+4. ❌ SPF alignment logic missing → ✅ Added fixed score logic
+5. ❌ Help page link not working → ✅ Added to sidebar + HTML created
+6. ❌ Header mismatch not triggering → ✅ Simulated in code
+7. ❌ Tooltips missing for terms → ✅ Added expander and help.html
