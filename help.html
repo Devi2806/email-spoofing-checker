@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Email Spoofing Checker - Help Page</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #eaeaea;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      color: #ff79c6;
+    }
+    code {
+      background-color: #2d2d2d;
+      padding: 4px 6px;
+      border-radius: 5px;
+      font-size: 0.95em;
+    }
+    ul {
+      margin-left: 20px;
+    }
+    .section {
+      margin-top: 30px;
+      padding: 15px;
+      background-color: #1f1f1f;
+      border-left: 4px solid #ff79c6;
+      border-radius: 8px;
+    }
+    a {
+      color: #8be9fd;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📖 Email Spoofing Checker - Help & Guide</h1>
+  <p>This page explains how the tool works, what SPF/DKIM/DMARC mean, and how to interpret the results. It will help both technical and non-technical users understand email spoofing.</p>
+
+  <div class="section">
+    <h2>🛠️ What This Tool Does</h2>
+    <ul>
+      <li>Accepts a sender's email address</li>
+      <li>Extracts the domain</li>
+      <li>Performs DNS lookup for SPF and DMARC records</li>
+      <li>Parses DMARC policy fields (p, rua, aspf, adkim)</li>
+      <li>Checks if SPF and DKIM domains align with the email</li>
+      <li>Returns verdict: ✅ Legit / ⚠️ Suspicious / ❌ Spoofed</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>📚 Email Authentication Protocols Explained</h2>
+
+    <h3>✅ SPF (Sender Policy Framework)</h3>
+    <p>
+      SPF helps prevent spoofing by letting domain owners specify which servers are allowed to send emails on their behalf. It's published as a DNS TXT record.
+    </p>
+    <ul>
+      <li>Checks if the sender's IP is allowed by domain owner</li>
+      <li>Protects against forged sender addresses</li>
+      <li>Easy to configure via domain DNS panel</li>
+    </ul>
+    <p><b>Example SPF Record:</b><br/>
+      <code>v=spf1 include:_spf.google.com ~all</code>
+    </p>
+
+    <h3>✅ DKIM (DomainKeys Identified Mail)</h3>
+    <p>
+      DKIM uses cryptographic signatures to verify that the email hasn't been tampered with in transit. The domain publishes a public key, and the email is signed using a private key.
+    </p>
+    <ul>
+      <li>Ensures message integrity and authenticity</li>
+      <li>Signature is verified with a public key in DNS</li>
+      <li>Used widely by services like Gmail, Outlook</li>
+    </ul>
+    <p><b>Example DKIM Record:</b><br/>
+      <code>v=DKIM1; k=rsa; p=MIIBIjANBgkqh...</code>
+    </p>
+
+    <h3>✅ DMARC (Domain-based Message Authentication Reporting & Conformance)</h3>
+    <p>
+      DMARC builds on SPF and DKIM. It tells receiving servers how to handle failures (reject/quarantine) and enables reporting.
+    </p>
+    <ul>
+      <li>Aligns the domain in the "From" header with SPF/DKIM results</li>
+      <li>Can block suspicious emails before they reach inbox</li>
+      <li>Includes optional reporting for monitoring spoofing attempts</li>
+    </ul>
+    <p><b>Example DMARC Record:</b><br/>
+      <code>v=DMARC1; p=reject; rua=mailto:dmarc-reports@example.com; aspf=s; adkim=s</code>
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>📊 Output Verdict Explained</h2>
+    <ul>
+      <li><b>✅ Legitimate</b>: SPF/DKIM/DMARC records are valid and aligned</li>
+      <li><b>❌ Spoofed</b>: Fails SPF or DMARC or both</li>
+      <li><b>⚠️ Suspicious</b>: Records are missing or misaligned</li>
+    </ul>
+    <p>If the domain has no DMARC policy, it's more prone to spoofing.</p>
+  </div>
+
+  <div class="section">
+    <h2>💡 Tips</h2>
+    <ul>
+      <li>Use a valid domain email like <code>name@gmail.com</code> or <code>admin@yahoo.com</code></li>
+      <li>Free services like Gmail and Yahoo have properly set records</li>
+      <li>Fake or non-existent domains will show "DMARC/SPF record not found"</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>🔗 More Help</h2>
+    <ul>
+      <li>Read our <a href="https://dmarc.org/">DMARC.org documentation</a></li>
+      <li>Check your records using: <a href="https://mxtoolbox.com/">MXToolbox</a></li>
+      <li>Report bugs in <code>bug_log.txt</code> or GitHub Issues</li>
+    </ul>
+  </div>
+
+</body>
+</html>
